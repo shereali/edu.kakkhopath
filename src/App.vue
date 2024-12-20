@@ -11,7 +11,7 @@
 </template> -->
 <template>
   <div v-if="route.name !== 'Login'">
-    <div class="flex h-screen bg-gray-100">
+    <div class="flex min-h-screen bg-gray-100">
       <!-- Sidebar Component -->
       <Sidebar v-if="route.name !== 'CourseDetails'" />
 
@@ -40,7 +40,7 @@ import { useAuthStore } from '@/stores/auth'
 import Sidebar from '@/components/Sidebar.vue'
 import Header from '@/components/Header.vue'
 import MainContent from '@/components/MainContent.vue'
-import Footer from './components/Footer.vue'
+import Footer from '@/components/Footer.vue'
 
 import { useRouter, useRoute } from 'vue-router'
 const router = useRouter()

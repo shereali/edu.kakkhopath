@@ -10,7 +10,7 @@ import router from './router'
 
 import { Icon } from '@iconify/vue'
 
-axios.defaults.baseURL = 'http://qreadacademy-dev.com' // Set your Laravel backend URL
+axios.defaults.baseURL = 'https://kakkhopath.com' // Set your Laravel backend URL
 axios.defaults.withCredentials = true // Enable sending cookies with requests
 
 const app = createApp(App)

@@ -1,31 +1,39 @@
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute } from 'vue-router'
-const route = useRoute()
 import { useAuthStore } from '@/stores/auth'
+
+const route = useRoute()
 const authStore = useAuthStore()
-// const user = localStorage.getItem('user')
-// const jsonUser = JSON.parse(user)
-// const full_name = jsonAuthStore.user?.first_name + ' ' + jsonAuthStore.user?.last_name
+
 const isOpen = ref(false)
-function toggleDropdown() {
+
+// Toggle the dropdown menu
+const toggleDropdown = () => {
   isOpen.value = !isOpen.value
 }
 
-function closeDropdown() {
+// Close the dropdown menu
+const closeDropdown = () => {
   isOpen.value = false
 }
 
-// Close the dropdown if clicked outside
-function handleClickOutside(event) {
-  if (!event.target.closest('.relative')) {
+// Handle clicks outside of the dropdown menu
+const handleClickOutside = (event: MouseEvent) => {
+  const dropdown = document.querySelector('.relative')
+  if (dropdown && !dropdown.contains(event.target as Node)) {
     closeDropdown()
   }
 }
 
-function logout() {
-  // Implement your logout logic here
-  authStore.logout()
+// Logout functionality
+const logout = async () => {
+  try {
+    await authStore.logout()
+    // Redirect to login page if necessary
+  } catch (error) {
+    console.error('Logout failed:', error)
+  }
 }
 
 onMounted(() => {
@@ -38,24 +46,32 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <header class="flex flex-row lg:items-center justify-between border-b lg:space-y-0 px-4">
+  <header class="flex flex-row items-center justify-between border-b px-4 py-3">
+    <!-- Welcome Section -->
     <div>
-      <h1 v-if="authStore.user" class="text-xl md:text-2xl font-bold">
-        Welcome, {{ authStore.user.first_name }} {{ authStore.user.last_name }}!
-      </h1>
-      <p class="text-gray-600">Here are your courses and activities</p>
-    </div>
-    <!-- <div
-      class="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-2 sm:space-y-0 w-full lg:w-auto"
-    > -->
-    <!-- <input
-        type="text"
-        placeholder="Search..."
-        class="px-4 py-2 border rounded w-full sm:w-auto"
-      /> -->
+      <div class="flex">
+        <!-- My Courses Link -->
+        <router-link
+          v-if="route.params.id"
+          class="mr-3 py-3 px-3 rounded-sm text-white text-xl bg-blue-600"
+          to="/courses"
+        >
+          My Courses
+        </router-link>
 
+        <!-- Welcome Message -->
+        <div>
+          <h1 v-if="authStore.user" class="text-xl md:text-2xl font-bold">
+            Welcome, {{ authStore.user.first_name }} {{ authStore.user.last_name }}!
+          </h1>
+          <p class="text-gray-600">Here are your courses and activities</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- User Dropdown -->
     <div class="relative">
-      <!-- User Icon with Click Event -->
+      <!-- User Icon -->
       <button @click="toggleDropdown" class="focus:outline-none">
         <svg
           class="w-8 h-8 text-gray-600 hover:text-gray-800"
@@ -72,14 +88,14 @@ onBeforeUnmount(() => {
       <div v-if="isOpen" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-20">
         <ul class="py-1">
           <li>
-            <router-link to="/courses" class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-              >My Courses</router-link
-            >
+            <router-link to="/courses" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+              My Courses
+            </router-link>
           </li>
           <li>
-            <router-link to="/profile" class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-              >Profile</router-link
-            >
+            <router-link to="/profile" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">
+              Profile
+            </router-link>
           </li>
           <li>
             <button
@@ -92,10 +108,15 @@ onBeforeUnmount(() => {
         </ul>
       </div>
     </div>
-    <!-- </div> -->
   </header>
 </template>
 
 <style scoped>
-/* Add any additional styles here */
+/* Add styles for better UX */
+.relative {
+  position: relative;
+}
+button {
+  cursor: pointer;
+}
 </style>

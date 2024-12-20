@@ -32,7 +32,7 @@ interface SiteInfo {
   youtube: string
   instagram: string
   twitter: string
-  linkdin: string
+  linkedin: string // Fixed typo from 'linkdin'
 }
 
 export const useAuthStore = defineStore('auth', {
@@ -56,10 +56,9 @@ export const useAuthStore = defineStore('auth', {
       localStorage.removeItem('token')
       delete axios.defaults.headers.common['Authorization']
     },
-    setUser(user: any) {
+    setUser(user: User) {
       this.user = user
-      const jsonUser = JSON.stringify(user)
-      localStorage.setItem('user', jsonUser)
+      localStorage.setItem('user', JSON.stringify(user))
     },
     removeUser() {
       this.user = null
@@ -67,36 +66,33 @@ export const useAuthStore = defineStore('auth', {
     },
     async fetchUser() {
       try {
-        const response = await axios.get<User>('/api/student/me') // Assuming you have an endpoint to get user details
-
-        const user = response.data
-        this.setUser(user)
+        const response = await axios.get<User>('/api/student/me')
+        this.setUser(response.data)
       } catch (error) {
-        console.error('Failed to fetch user', error)
+        console.error('Failed to fetch user:', error)
+        throw new Error('Unable to fetch user data.')
       }
     },
-
-    setSiteInfo(siteInfo: any) {
+    setSiteInfo(siteInfo: SiteInfo) {
       this.siteInfo = siteInfo
-      const jsonSetting = JSON.stringify(siteInfo)
-      localStorage.setItem('siteInfo', jsonSetting)
+      localStorage.setItem('siteInfo', JSON.stringify(siteInfo))
     },
-
-    removeSitInfo() {
+    removeSiteInfo() {
+      // Renamed from removeSitInfo
       this.siteInfo = null
       localStorage.removeItem('siteInfo')
     },
-
     async fetchSetting() {
       try {
-        const response = await axios.get<SiteInfo>('/api/v1/client/general-info') // Assuming you have an endpoint to get user details
-        const siteInfo = response.data.general_info
-        this.setSiteInfo(siteInfo)
-        const menuInfo = response.data.data
-        const jsonMenu = JSON.stringify(menuInfo)
-        localStorage.setItem('menus', jsonMenu)
+        const response = await axios.get<{ general_info: SiteInfo; data: any }>(
+          '/api/v1/client/general-info'
+        )
+        const { general_info, data } = response.data
+        this.setSiteInfo(general_info)
+        localStorage.setItem('menus', JSON.stringify(data))
       } catch (error) {
-        console.error('Failed to fetch user', error)
+        console.error('Failed to fetch settings:', error)
+        throw new Error('Unable to fetch site settings.')
       }
     },
     async login(email: string, password: string) {
@@ -105,35 +101,54 @@ export const useAuthStore = defineStore('auth', {
           email,
           password
         })
-        const token = response.data.token
+        const { token } = response.data
         this.setToken(token)
         await this.fetchUser()
         await this.fetchSetting()
+
         router.push('/')
       } catch (error) {
-        console.error('Login failed', error)
-        throw error // Rethrow error to handle it in the component
+        console.error('Login failed:', error)
+        throw new Error('Invalid login credentials.')
       }
     },
     async logout() {
-      const response = await axios.post<{ token: string }>('/api/student/logout', {})
-      this.removeToken()
-      this.removeUser()
-      if (response.status === 200) {
+      try {
+        await axios.post('/api/student/logout')
+        this.removeToken()
+        this.removeUser()
+        this.removeSiteInfo()
         router.push('/login')
+      } catch (error) {
+        console.error('Logout failed:', error)
+        throw new Error('Unable to logout. Please try again.')
       }
     },
     initialize() {
       const token = localStorage.getItem('token')
-      const user: any = localStorage.getItem('user')
-      const jsonUser = JSON.parse(user)
-      const siteInfo: any = localStorage.getItem('siteInfo')
-      const jsonSiteInfo = JSON.parse(siteInfo)
+      const user = localStorage.getItem('user')
+      const siteInfo = localStorage.getItem('siteInfo')
 
       if (token) {
         this.setToken(token)
-        this.setUser(jsonUser)
-        this.setSiteInfo(jsonSiteInfo)
+      }
+
+      if (user) {
+        try {
+          this.setUser(JSON.parse(user))
+        } catch {
+          console.warn('Invalid user data in localStorage. Clearing user data.')
+          this.removeUser()
+        }
+      }
+
+      if (siteInfo) {
+        try {
+          this.setSiteInfo(JSON.parse(siteInfo))
+        } catch {
+          console.warn('Invalid site info in localStorage. Clearing site info.')
+          this.removeSiteInfo()
+        }
       }
     }
   }

@@ -95,14 +95,16 @@
   <!-- Course Details Section -->
   <div class="p-4 bg-gray-100 border-t border-gray-300 mt-4">
     <h2 class="text-lg font-semibold">{{ courseBroadTitle }}</h2>
-    <div class="flex items-center space-x-4 mt-1 text-sm lg:text-base">
+    <!-- <div class="flex items-center space-x-4 mt-1 text-sm lg:text-base">
       <span>⭐ {{ ratings }} / 5</span>
       <span>👥 {{ studentsCount }} students</span>
       <span>⏰ {{ totalHours }} hours</span>
-    </div>
-    <p class="mt-2"><strong>Description:</strong> {{ courseDescription }}</p>
-    <p class="mt-2"><strong>Instruction:</strong> {{ courseInstruction }}</p>
-    <p class="mt-2"><strong>Requirement:</strong> {{ courseRequirement }}</p>
+    </div> -->
+    <!-- <p class="mt-2"><strong>Description:</strong> {{ courseDescription }}</p> -->
+    <p class="mt-2" v-if="courseInstruction != null">
+      <strong>Instruction:</strong> {{ courseInstruction }}
+    </p>
+    <!-- <p class="mt-2"><strong>Requirement:</strong> {{ courseRequirement }}</p> -->
   </div>
 </template>
 
@@ -125,7 +127,7 @@ const studentsCount = 1200
 const totalHours = 50
 const courseDescription =
   'This course covers everything from basics to advanced topics in web development.'
-const courseInstruction = 'Follow each section in sequence for optimal learning.'
+const courseInstruction = props.course_module[0].instruction
 const courseRequirement = 'Basic understanding of HTML, CSS, and JavaScript.'
 
 const currentSectionIndex = ref(0)
